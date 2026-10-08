@@ -1,0 +1,14 @@
+streamlit>=1.37
+pydantic>=2.7
+pandas>=2.0
+openpyxl>=3.1
+PyMuPDF>=1.24
+python-dotenv>=1.0
+openai>=1.30
+Pillow>=10.0
+
+# Development / testing
+pytest>=8.0
+
+# Optional: open-source OCR for scanned PDFs is installed separately,
+# see requirements-ocr.txt (keeps the core install lightweight).

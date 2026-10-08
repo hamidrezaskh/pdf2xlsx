@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+.env
+.venv/
+venv/
+.ipynb
+.gitignore
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime artifacts
+debug_output/
+logs/
+*.xlsx
+!tests/fixtures/**/*.xlsx
+
+# Keep the original prototype output out of version control
+output.xlsx

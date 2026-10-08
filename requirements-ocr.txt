@@ -1,0 +1,10 @@
+# Optional extras for the Open-Source OCR pipeline (scanned / image-only PDFs).
+# Install with:  pip install -r requirements-ocr.txt
+#
+# EasyOCR is the default OCR backend (supports Persian 'fa' and English 'en').
+# It pulls in PyTorch, which is why it is kept out of the core requirements.
+easyocr>=1.7.1
+
+# Alternative OCR backend (requires the Tesseract binary to be installed
+# separately and available on PATH):
+# pytesseract>=0.3.10

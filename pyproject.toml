@@ -1,0 +1,13 @@
+[project]
+name = "pdf2xlsx"
+version = "1.0.0"
+description = "Generic PDF to XLSX converter using OCR / document understanding with dynamic table extraction"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
