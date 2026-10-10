@@ -65,7 +65,8 @@ environment — credentials are never hard-coded.
 | `OPENAI_BASE_URL`    | *(unset)*          | Endpoint base URL, e.g. `http://localhost:20128/v1` *(alias: `BASE_URL`)* |
 | `OPENAI_MODEL`       | `gpt-4o-mini`      | Model name, e.g. `gemini/gemini-3.5-flash-lite` behind a gateway *(alias: `MODEL`)* |
 | `OPENAI_TEMPERATURE` | `0`                | Sampling temperature                 |
-| `OCR_MODEL`          | `easyocr`          | `easyocr` \| `tesseract` \| `native` |
+| `OCR_MODEL`          | `easyocr`          | `easyocr` \| `trocr` \| `tesseract` \| `native` |
+| `TROCR_MODEL`        | `hezarai/trocr-base-fa-v2` | Persian TrOCR line model (Hugging Face id), used by `OCR_MODEL=trocr` |
 | `OCR_LANGUAGES`      | `fa,en`            | OCR languages (Persian + English)    |
 | `DEVICE`             | `auto`             | `auto` \| `cpu` \| `cuda`            |
 | `OCR_DPI`            | `200`              | Render DPI before OCR                |
@@ -178,7 +179,15 @@ automatically.
 
 1. **Text source per page** — the embedded text layer is used when
    present (exact, free). Otherwise the page is rendered and the
-   configured OCR backend runs (loaded lazily, cached across requests).
+   configured OCR backend runs (loaded lazily, cached across requests):
+   - `easyocr` (default) — Persian + English,
+   - `trocr` — [hezarai/trocr-base-fa-v2](https://huggingface.co/hezarai/trocr-base-fa-v2),
+     a Persian TrOCR *line* model; the backend adds its own page →
+     lines → words segmentation (numpy-only: Otsu binarization, ruling
+     line masking, projection bands) and aligns tokens to word boxes
+     (RTL-aware). Weights (~935 MB) are downloaded from Hugging Face on
+     first use; model id configurable via `TROCR_MODEL`.
+   - `tesseract`, or `native` (OCR disabled).
 2. **Table detection** — two complementary detectors:
    - *Ruling lines*: vector lines in the PDF are clustered and connected
      into grids (≥2×2 cells) via intersection components.

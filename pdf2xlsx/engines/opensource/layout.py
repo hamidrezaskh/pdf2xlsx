@@ -247,8 +247,11 @@ def find_column_separators(
     """Find x positions where a vertical gap is consistent across lines.
 
     These positions become column boundaries of borderless tables.  A
-    candidate needs a gap in ``max(2, ceil(coverage * n_lines))`` lines of
-    the block, which prose almost never satisfies but table columns do.
+    candidate needs votes from ``max(2, ceil(coverage * n_lines))``
+    *distinct* lines of the block, which prose almost never satisfies
+    but table columns do.  Coverage counts the lines that actually fell
+    into the cluster (not lines merely within tolerance afterwards),
+    which prevents two near-duplicate separators.
     """
     n_lines = len(block)
     if n_lines < 2:
@@ -257,37 +260,30 @@ def find_column_separators(
 
     required = max(2, math.ceil(coverage * n_lines))
 
-    candidates: List[float] = []
-    for line in block:
+    candidates: List[Tuple[float, int]] = []  # (gap midpoint, line index)
+    for line_index, line in enumerate(block):
         ordered = sorted(line.words, key=lambda w: w.x0)
         for left, right in zip(ordered, ordered[1:]):
-            gap = right.x0 - left.x1
-            if gap >= min_gap:
-                candidates.append((left.x1 + right.x0) / 2.0)
+            if right.x0 - left.x1 >= min_gap:
+                candidates.append(((left.x1 + right.x0) / 2.0, line_index))
     if not candidates:
         return []
 
-    clusters: List[List[float]] = []
-    for value in sorted(candidates):
-        if clusters and value - (sum(clusters[-1]) / len(clusters[-1])) <= tolerance:
-            clusters[-1].append(value)
-        else:
-            clusters.append([value])
+    clusters: List[List[Tuple[float, int]]] = []
+    for candidate in sorted(candidates, key=lambda c: c[0]):
+        value = candidate[0]
+        if clusters:
+            mean = sum(v for v, _ in clusters[-1]) / len(clusters[-1])
+            if value - mean <= tolerance:
+                clusters[-1].append(candidate)
+                continue
+        clusters.append([candidate])
 
     separators: List[float] = []
-    for cluster in clusters:
-        # count DISTINCT lines contributing to this cluster
-        contributing = 0
-        for line in block:
-            ordered = sorted(line.words, key=lambda w: w.x0)
-            for left, right in zip(ordered, ordered[1:]):
-                if right.x0 - left.x1 >= min_gap:
-                    mid = (left.x1 + right.x0) / 2.0
-                    if any(abs(mid - value) <= tolerance for value in cluster):
-                        contributing += 1
-                        break
-        if contributing >= required:
-            separators.append(sum(cluster) / len(cluster))
+    for members in clusters:
+        voters = {line_index for _, line_index in members}
+        if len(voters) >= required:
+            separators.append(sum(v for v, _ in members) / len(members))
     return sorted(separators)
 
 

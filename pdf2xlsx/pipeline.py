@@ -1,7 +1,17 @@
 """End-to-end conversion orchestration.
 
-PDF -> processing -> extraction engine -> validation/normalization ->
+Pipeline: PDF -> OCR/LLM extraction -> schema validation/normalization ->
 XLSX generation, with logging, progress callbacks and debug artifacts.
+
+This module orchestrates the modular services only:
+
+* :mod:`pdf2xlsx.ocr_service`   — PDF/image input, OCR, bboxes, confidence
+* :mod:`pdf2xlsx.llm_service`   — Gemini/LLM structured extraction
+* :mod:`pdf2xlsx.schema_service` — schema definition + validation/defaults
+* :mod:`pdf2xlsx.excel_service` — JSON -> XLSX (order, header, RTL, widths)
+
+Engines (``pdf2xlsx.engines``) implement the extraction strategies and are
+selected via the registry; this module never contains engine logic itself.
 """
 
 from __future__ import annotations
@@ -17,11 +27,13 @@ from .config import Settings
 from .debug import DebugWriter
 from .engines import ExtractionEngine, get_engine, normalize_mode
 from .exceptions import ExtractionError
+from .excel_service import result_to_xlsx
 from .logging_config import setup_logging
+from .ocr_service import load_pdf_input
 from .pdf import PdfSource, load_pdf
+from .schema_service import validate_result
 from .schemas import ExtractionResult
-from .validation import ValidationReport, validate_and_normalize
-from .xlsx import generate_xlsx
+from .validation import ValidationReport
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +94,7 @@ def convert_pdf(
     if debug is None and settings.debug:
         debug = DebugWriter(settings.debug_dir)
 
-    pdf = load_pdf(source, source_name=filename)
+    pdf = load_pdf_input(source, source_name=filename)
     try:
         emit(f"PDF loaded: {pdf.page_count} page(s)")
         active = engine or get_engine(mode_key, settings)
@@ -95,7 +107,7 @@ def convert_pdf(
         result = active.extract(pdf, debug=debug)
         emit(f"Extraction finished: {result.table_count} table(s) detected")
 
-        result, report = validate_and_normalize(result)
+        result, report = validate_result(result)
         emit(f"Validation finished: {report.summary}")
         for issue in report.issues:
             logger.log(
@@ -112,7 +124,7 @@ def convert_pdf(
             raise ExtractionError(summary)
 
         emit("Generating XLSX...")
-        xlsx_bytes = generate_xlsx(result)
+        xlsx_bytes = result_to_xlsx(result)
         duration = time.perf_counter() - started
 
         debug_dir: Optional[Path] = None

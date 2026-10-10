@@ -22,3 +22,10 @@ logs/
 
 # Keep the original prototype output out of version control
 output.xlsx
+
+
+
+*.pid
+*.log
+*.err
+trocr_diagnostic.txt
