@@ -8,7 +8,7 @@ openai>=1.30
 Pillow>=10.0
 
 # Development / testing
-pytest>=8.0
+# pytest>=8.0
 
 # Optional: open-source OCR for scanned PDFs is installed separately,
 # see requirements-ocr.txt (keeps the core install lightweight).
