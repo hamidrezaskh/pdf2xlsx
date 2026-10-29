@@ -3,15 +3,15 @@
 
 # --- EasyOCR backend (OCR_MODEL=easyocr, default) ---
 # Supports Persian 'fa' and English 'en'. Pulls in PyTorch (CUDA build).
-easyocr>=1.7.1
+# easyocr>=1.7.1
 
 # --- TrOCR Persian backend (OCR_MODEL=trocr) ---
 # Model: hezarai/trocr-base-fa-v2 (Hugging Face, ~935 MB, downloaded on
 # first use). This machine has no CUDA GPU by default: the CPU wheel of
 # torch is enough; install the default index build if you have a GPU.
-torch>=2.2
-transformers>=4.40
-huggingface_hub>=0.23
+# torch>=2.2
+# transformers>=4.40
+# huggingface_hub>=0.23
 # Optional official loader (used automatically when installed):
 # hezar>=0.4.0
 
@@ -22,7 +22,7 @@ huggingface_hub>=0.23
 # https://huggingface.co/google/gemma-2-2b-it then `huggingface-cli login`.
 # accelerate enables device_map="auto"; bitsandbytes enables 4-bit load
 # on CUDA GPUs (optional but recommended).
-accelerate>=0.30
+# accelerate>=0.30
 # bitsandbytes>=0.43  # CUDA only; skip on CPU-only machines
 
 # Alternative OCR backend (requires the Tesseract binary on PATH):
